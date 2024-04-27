@@ -5,7 +5,7 @@ import { Form, Button, Container, Row, Col } from 'react-bootstrap';
 
 const Login = () => {
   const [username, setUsername] = useState('');
-  const [password, setPassword] = useNavigate('');
+  const [password, setPassword] = useState(''); // Ensure state initialization is correct
   const navigate = useNavigate();
 
   const handleLogin = async () => {
