@@ -131,6 +131,14 @@ default. Non-fatal CRA warnings you may see in the console:
 - `[eslint] 'React' is defined but never used` in `src/components/Logout.js` —
   harmless lint warning.
 
+## Documentation
+
+Living docs in [`docs/`](docs/README.md) — keep them in sync with the code:
+
+- [`docs/architecture.md`](docs/architecture.md) — stack, routes, auth/token flow, API layer
+- [`docs/roles-and-ui.md`](docs/roles-and-ui.md) — what each role sees, where the UI is gated
+- [`docs/development-state.md`](docs/development-state.md) — phase status, known gaps, decision log
+
 ## Project layout
 
 ```
