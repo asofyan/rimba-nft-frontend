@@ -1,8 +1,8 @@
 # Rimba NFT Store — Frontend
 
 Single-page React app (Create React App + React-Bootstrap) for the Rimba NFT
-Store API: register/login, wallet dashboard, NFT gallery, and — for Admin users
-— asset upload and on-chain minting.
+Store API: register/login, wallet dashboard, NFT gallery, user-status administration
+for SuperAdmin, and — for SuperAdmin/Subscriber — asset upload and on-chain minting.
 
 The backend must be running: <http://localhost:3000> (see `../backend/README.md`).
 
@@ -74,20 +74,22 @@ and make sure that API allows this origin.
 | `/register` | public | sign-up: username, password, ETH address |
 | `/logout` | public | clears token, redirects to `/login` |
 | `/dashboard` | any logged-in user | username, role, ETH wallet balance, shortcuts |
-| `/nfts` | any logged-in user | gallery of all NFTs + mint status; Admin sees a **Mint** button |
-| `/nfts/new` | Admin (UI) | upload asset: name, description, image, attributes, bid price |
-| `/nfts/:id/edit` | Admin (UI) | edit metadata of an existing asset |
+| `/nfts` | any logged-in user | gallery of all NFTs + mint status; SuperAdmin/Subscriber see **Mint** |
+| `/nfts/new` | SuperAdmin, Subscriber | upload asset: name, description, image, attributes, bid price |
+| `/nfts/:id/edit` | SuperAdmin, Subscriber | edit metadata of an existing asset |
+| `/users` | SuperAdmin | user status: role, active flag, ETH balance, NFT count, last login + deactivate/reactivate |
 
 Unknown paths and `/` render the login page.
 
 ## First-run walkthrough
 
-1. Start backend + Ganache + MongoDB (see backend README) and seed an Admin:
-   `node scripts/createAdmin.js admin admin123 0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1`.
+1. Start backend + Ganache + MongoDB (see backend README) and seed a SuperAdmin:
+   `node scripts/createAdmin.js admin admin123 0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1`
+   (add `Subscriber` as a 4th argument for seller-only accounts).
 2. `npm start` here, open <http://localhost:3001>.
 3. Register a normal user (`/register`) — it always becomes a `Client`;
    the ETH address is required and must be a valid address.
-4. Log in as the Admin to see the **Upload** tab, add an asset, then press
+4. Log in as the SuperAdmin to see **Upload** + **Users** tabs, add an asset, then press
    **Mint** in the gallery. The tx hash is shown on success.
 5. Log in as the Client to confirm the gallery/mint status is read-only
    (no Upload nav item, no Mint button).
@@ -101,7 +103,7 @@ Unknown paths and `/` render the login page.
 - `src/auth.js` decodes the JWT payload client-side (`id`, `role`, `username`)
   and treats an expired `exp` as logged out.
 - `PrivateRoute` redirects to `/login` when there is no valid token.
-- Role checks in the UI (`isAdmin()`) are **cosmetic only** — the API enforces
+- Role checks in the UI (`hasRole()`, `canSell()`, `isSuperAdmin()`) are **cosmetic only** — the API enforces
   RBAC, so a Client calling admin endpoints still gets `403`.
 
 Changing the backend's `JWT_SECRET` invalidates all stored tokens: the app will
@@ -144,13 +146,14 @@ Living docs in [`docs/`](docs/README.md) — keep them in sync with the code:
 ```
 src/
   api.js               axios instance + auth/401 interceptors, getErrorMessage()
-  auth.js              token helpers: getUser(), isAdmin(), logout()
+  auth.js              token helpers: getUser(), hasRole(), canSell(), isSuperAdmin(), logout()
   App.js               router + navbar
   components/
     Login.js           POST /login
     Register.js        POST /register
     Dashboard.js       GET /api/wallet/balance
-    Gallery.js         GET /api/nfts, POST /api/nfts/mint (Admin)
+    Gallery.js         GET /api/nfts, POST /api/nfts/mint (SuperAdmin/Subscriber)
+    Users.js           GET /api/users/status, deactivate/reactivate (SuperAdmin)
     NFTForm.js         POST /api/nfts (upload, multipart), PUT /api/nfts/:id
     PrivateRoute.js    auth guard
     Logout.js          clears token
@@ -166,6 +169,6 @@ src/
 | `401` on login | wrong credentials, or rate limit hit (20 attempts / 15 min; wait or restart backend with `NODE_ENV=test`) |
 | Port 3000 already in use, prompt to use another port | the backend owns 3000 — keep `PORT=3001` in `.env` and answer "no" if CRA asks |
 | Changed `.env` but nothing happened | CRA inlines env vars; kill the dev server and run `npm start` again |
-| Upload fails | Admin only; JPEG/PNG/WebP, max 5 MB; `attributes` must be valid JSON |
+| Upload fails | SuperAdmin/Subscriber only; JPEG/PNG/WebP, max 5 MB; `attributes` must be valid JSON |
 | Mint button does nothing / error says contract missing | contract not deployed on the current Ganache run → redeploy (backend README) |
 | NFT image broken after restart | local disk storage + `PROJECT_URL` mismatch; images live under the backend's `uploads/` |

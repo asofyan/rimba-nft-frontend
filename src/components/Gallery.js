@@ -2,14 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Container, Row, Col, Card, Button, Alert, Spinner, Badge } from 'react-bootstrap';
 import api, { getErrorMessage } from '../api';
-import { isAdmin } from '../auth';
+import { canSell } from '../auth';
 
 const Gallery = () => {
   const [nfts, setNfts] = useState(null);
   const [error, setError] = useState('');
   const [mintingId, setMintingId] = useState(null);
   const [mintResult, setMintResult] = useState(null);
-  const admin = isAdmin();
+  const seller = canSell();
 
   const loadNfts = () => {
     api
@@ -59,7 +59,7 @@ const Gallery = () => {
     <Container className="mt-4">
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h2>NFT Gallery</h2>
-        {admin && (
+        {seller && (
           <Button as={Link} to="/nfts/new" variant="success">
             + Upload NFT
           </Button>
@@ -74,7 +74,7 @@ const Gallery = () => {
 
       {nfts.length === 0 ? (
         <Alert variant="info">
-          No NFTs yet.{admin && ' Upload your first asset to get started!'}
+          No NFTs yet.{seller && ' Upload your first asset to get started!'}
         </Alert>
       ) : (
         <Row xs={1} md={2} lg={3} className="g-4">
@@ -114,7 +114,7 @@ const Gallery = () => {
                     </div>
                   )}
 
-                  {admin && (
+                  {seller && (
                     <div className="d-flex gap-2 mt-auto">
                       {!nft.minted && (
                         <Button

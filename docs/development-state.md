@@ -11,7 +11,7 @@ Snapshot date: **2026-10-26** · Node 22.23 · `react-scripts` 5.0.1 · React 18
 | 2 | Auth guard (`PrivateRoute`), dashboard, wallet balance card | ✅ done |
 | 3 | Gallery + mint action, NFT create/edit form | ✅ done |
 | 4 | Central axios layer (`src/api.js`), friendly error messages, smoke test | ✅ done |
-| 5 | 3-tier roles in UI (`hasRole`/`canSell`/`isSuperAdmin`), Users page with user status | 🚧 in progress |
+| 5 | 3-tier roles in UI (`hasRole`/`canSell`/`isSuperAdmin`), Users page with user status | ✅ done |
 | 6 | Marketplace UI: bid, buy, transfer | 📋 planned |
 
 ## What works today (verifiable)
@@ -29,8 +29,8 @@ Manual check that requires a running backend: login as `admin`, open Gallery →
 
 | # | Gap | Impact | Sketch of a fix |
 |---|---|---|---|
-| 1 | No Users page | SuperAdmin cannot see other users' status in the UI | `Users.js` + `GET /api/users/status` (in progress) |
-| 2 | Role gate only in the backend | `/nfts/new` is reachable by any logged-in user (403 on submit) | `PrivateRoute roles={[...]}` |
+| 1 | ~~No Users page~~ | resolved: `src/components/Users.js` + `GET /api/users/status` | — |
+| 2 | ~~Role gate only in the backend~~ | resolved: `PrivateRoute roles={[...]}` redirects to `/dashboard` | — |
 | 3 | No bid/buy/transfer UI | Store cannot trade | Blocked by backend contract work (Phase 6) |
 | 4 | No "my NFTs" | Gallery is global; no ownership shown | Needs `uploadedBy` in the API |
 | 5 | No pagination / search | Renders every NFT | `?page&limit` + filters once the API supports it |
@@ -43,6 +43,14 @@ Manual check that requires a running backend: login as `admin`, open Gallery →
 ## Decision log
 
 Newest first.
+
+**2026-10-26 — Phase 5 implemented: capability helpers + Users page.**
+`isAdmin()` was replaced by `canSell()` (SuperAdmin/Subscriber) and
+`isSuperAdmin()`; nav and buttons follow those helpers instead of comparing role
+strings. New `/users` page (SuperAdmin) renders the server's status report and
+calls the existing deactivate/reactivate endpoints; the current user's own
+"Deactivate" button is disabled because the API rejects self-deactivation.
+`PrivateRoute` gained a `roles` prop and redirects to `/dashboard`.
 
 **2026-10-26 — Capability helpers (`canSell()`) instead of comparing role strings at call sites.**
 Adding a third role would otherwise mean editing every `role === 'Admin'` check.

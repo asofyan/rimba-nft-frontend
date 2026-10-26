@@ -13,9 +13,9 @@ but still receives `403` from the backend. Authoritative matrix:
 | `Subscriber` | seeded (`admin1`…`admin5`) | Seller/member: list assets and mint |
 | `Client` | `POST /register` | Read-only participant |
 
-Current code state: two roles only (`Admin` / `Client`) and
-`src/auth.js` exposes just `isAdmin()`. The three-tier helpers below are part of
-the in-progress RBAC phase.
+Implemented in `src/auth.js`: `hasRole(...roles)`, `isSuperAdmin()`,
+`canSell()` (= SuperAdmin or Subscriber). Nothing compares raw role strings at
+call sites anymore.
 
 ## What each role sees
 
@@ -23,15 +23,16 @@ the in-progress RBAC phase.
 |---|---|---|---|
 | Navbar: Gallery | ✅ | ✅ | ✅ |
 | Navbar: Upload | ❌ | ✅ | ✅ |
-| Navbar: Users 📋 | ❌ | ❌ | ✅ |
+| Navbar: Users | ❌ | ❌ | ✅ |
 | Dashboard: wallet balance card | ✅ | ✅ | ✅ |
 | Dashboard: gallery card | ✅ | ✅ | ✅ |
 | Dashboard: upload card | ❌ | ✅ | ✅ |
 | Gallery: mint button | ❌ | ✅ | ✅ |
-| `/nfts/new`, `/nfts/:id/edit` | ❌ (redirect 📋) | ✅ | ✅ |
-| `/users` (status table) 📋 | ❌ (redirect) | ❌ (redirect) | ✅ |
+| `/nfts/new`, `/nfts/:id/edit` | ❌ (redirect to `/dashboard`) | ✅ | ✅ |
+| `/users` (status table) | ❌ (redirect) | ❌ (redirect) | ✅ |
 
-`📋` = designed, not built yet.
+Verified in a browser: SuperAdmin sees Gallery/Upload/Users; Subscriber sees
+Gallery/Upload and is redirected away from `/users`.
 
 ## Where the UI is gated
 

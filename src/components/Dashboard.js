@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Container, Row, Col, Card, Button, Alert, Spinner } from 'react-bootstrap';
 import api, { getErrorMessage } from '../api';
-import { getUser, isAdmin } from '../auth';
+import { getUser, canSell } from '../auth';
 
 const Dashboard = () => {
   const user = getUser();
@@ -62,7 +62,7 @@ const Dashboard = () => {
           </Card>
         </Col>
 
-        {isAdmin() && (
+        {canSell() && (
           <Col md={6} lg={4}>
             <Card className="mb-3">
               <Card.Body>

@@ -21,13 +21,14 @@ Dev server runs on **3001** (`.env` → `PORT`), because the API owns 3000.
 | `src/index.js` | React root, imports Bootstrap CSS, renders `<App />` in StrictMode |
 | `src/App.js` | `<Router>`, top navbar, all route declarations |
 | `src/api.js` | axios instance (`REACT_APP_API_URL`), request interceptor (attach bearer), response interceptor (`401` → clear token + `/login`), `getErrorMessage()` |
-| `src/auth.js` | `getToken()`, `getUser()` (decode + `exp` check), `isAdmin()`, `logout()` |
+| `src/auth.js` | `getToken()`, `getUser()` (decode + `exp` check), `hasRole()`, `isSuperAdmin()`, `canSell()`, `logout()` |
 | `src/components/PrivateRoute.js` | Auth guard: no valid token → `<Navigate to="/login" />` |
 | `src/components/Login.js` | `POST /login` → store token → `/dashboard` |
 | `src/components/Register.js` | `POST /register` (username, password, ETH address) → `/login` |
 | `src/components/Dashboard.js` | `GET /api/wallet/balance`; wallet card, gallery shortcut, admin card |
 | `src/components/Gallery.js` | `GET /api/nfts`; cards with mint status; Admin "Mint" button → `POST /api/nfts/mint` |
 | `src/components/NFTForm.js` | Create (`POST /api/nfts`, multipart) and edit (`PUT /api/nfts/:id`) in one component |
+| `src/components/Users.js` | `GET /api/users/status` table + deactivate/reactivate; SuperAdmin only |
 | `src/components/Logout.js` | Clears the token (also reachable as `/logout`) |
 
 ## Routing
@@ -39,13 +40,13 @@ Dev server runs on **3001** (`.env` → `PORT`), because the API owns 3000.
 | `/logout` | public | `Logout` |
 | `/dashboard` | `PrivateRoute` | `Dashboard` |
 | `/nfts` | `PrivateRoute` | `Gallery` |
-| `/nfts/new` | `PrivateRoute` (+ role gate `📋`) | `NFTForm` (create) |
-| `/nfts/:id/edit` | `PrivateRoute` (+ role gate `📋`) | `NFTForm` (edit) |
-| `/users` 📋 | `PrivateRoute` + SuperAdmin | `Users` — user status table |
+| `/nfts/new` | `PrivateRoute` + SuperAdmin/Subscriber | `NFTForm` (create) |
+| `/nfts/:id/edit` | `PrivateRoute` + SuperAdmin/Subscriber | `NFTForm` (edit) |
+| `/users` | `PrivateRoute` + SuperAdmin | `Users` — user status table |
 
-Current behaviour: `/nfts/new` and `/nfts/:id/edit` are reachable by *any*
-logged-in user; only the backend rejects the request (`403`). The role gate that
-hides the page itself is part of the RBAC phase.
+`PrivateRoute` takes a `roles` prop; a logged-in user whose role is not allowed is
+redirected to `/dashboard` (no dead-end error page). The server still enforces
+the same rule, so hiding a route is convenience, not security.
 
 ## Auth and token flow
 

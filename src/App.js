@@ -8,7 +8,8 @@ import Register from './components/Register';
 import Gallery from './components/Gallery';
 import NFTForm from './components/NFTForm';
 import PrivateRoute from './components/PrivateRoute';
-import { getUser, isAdmin, logout } from './auth';
+import Users from './components/Users';
+import { getUser, canSell, isSuperAdmin, logout, ROLES } from './auth';
 
 const Navigation = () => {
   const navigate = useNavigate();
@@ -31,9 +32,14 @@ const Navigation = () => {
               <Nav.Link as={Link} to="/nfts">
                 Gallery
               </Nav.Link>
-              {isAdmin() && (
+              {canSell() && (
                 <Nav.Link as={Link} to="/nfts/new">
                   Upload
+                </Nav.Link>
+              )}
+              {isSuperAdmin() && (
+                <Nav.Link as={Link} to="/users">
+                  Users
                 </Nav.Link>
               )}
             </>
@@ -81,7 +87,7 @@ const App = () => (
       <Route
         path="/nfts/new"
         element={
-          <PrivateRoute>
+          <PrivateRoute roles={[ROLES.SUPERADMIN, ROLES.SUBSCRIBER]}>
             <NFTForm />
           </PrivateRoute>
         }
@@ -89,8 +95,16 @@ const App = () => (
       <Route
         path="/nfts/:id/edit"
         element={
-          <PrivateRoute>
+          <PrivateRoute roles={[ROLES.SUPERADMIN, ROLES.SUBSCRIBER]}>
             <NFTForm />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/users"
+        element={
+          <PrivateRoute roles={[ROLES.SUPERADMIN]}>
+            <Users />
           </PrivateRoute>
         }
       />
